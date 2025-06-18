@@ -1,0 +1,39 @@
+{
+    "model": {
+        "cat_dims": [10, 20, 15, 8],
+        "num_continuous": 6,
+        "dim": 32,
+        "depth": 6,
+        "heads": 8,
+        "dim_head": 16,
+        "mlp_hidden_mults": [4, 2],
+        "dropout": 0.1,
+        "mc_dropout": 0.2
+    },
+    "training": {
+        "teacher_epochs": 50,
+        "student_epochs": 100,
+        "batch_size": 32,
+        "learning_rate": 0.001,
+        "weight_decay": 0.0001,
+        "ema_decay": 0.999,
+        "confidence_threshold": 0.7,
+        "pseudo_label_update_freq": 20,
+        "lambda_u": 1.0,
+        "lambda_p": 0.1
+    },
+    "data": {
+        "categorical_features": ["tool_type", "material", "coolant_type", "machining_method"],
+        "continuous_features": ["cutting_speed", "feed_rate", "depth_of_cut", "tool_wear", "temperature", "vibration"],
+        "target": "crack_length"
+    },
+    "physics": {
+        "C": 1e-10,
+        "m": 3.0
+    },
+    "augmentation": {
+        "mixup_alpha": 0.75,
+        "feature_dropout_rate": 0.2,
+        "noise_std": 0.1
+    }
+}
