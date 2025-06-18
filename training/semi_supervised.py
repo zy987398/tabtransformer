@@ -13,9 +13,10 @@ class PseudoLabelGenerator:
     
     def generate(self, model, unlabeled_loader, device):
         """Generate pseudo-labels using Monte Carlo dropout."""
-        model.eval()
+        # Enable dropout during prediction for Monte Carlo sampling
+        model.train()
         pseudo_data = []
-        
+
         with torch.no_grad():
             for batch in tqdm(unlabeled_loader, desc='Generating pseudo-labels'):
                 x_cat, x_cont = [x.to(device) for x in batch]
@@ -46,8 +47,13 @@ class PseudoLabelGenerator:
                                 'confidence': confidence[i]
                             })
         
-        print(f'Generated {len(pseudo_data)} pseudo-labels '
-              f'({len(pseudo_data)/len(unlabeled_loader.dataset)*100:.1f}% of unlabeled data)')
+        print(
+            f'Generated {len(pseudo_data)} pseudo-labels '
+            f'({len(pseudo_data)/len(unlabeled_loader.dataset)*100:.1f}% of unlabeled data)'
+        )
+
+        # Switch back to evaluation mode after generation
+        model.eval()
         
         return pseudo_data
 

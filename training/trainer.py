@@ -287,13 +287,22 @@ class SemiSupervisedTrainer:
     
     def _save_checkpoint(self, filename, model):
         """Save model checkpoint."""
-        os.makedirs('checkpoints', exist_ok=True)
+        # If `filename` is a path (contains directories or is absolute),
+        # respect it. Otherwise save inside the default ``checkpoints``
+        # directory to keep backward compatibility with existing calls.
+        if os.path.isabs(filename) or os.path.dirname(filename):
+            path = filename
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+        else:
+            os.makedirs('checkpoints', exist_ok=True)
+            path = os.path.join('checkpoints', filename)
+
         torch.save({
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
             'config': self.config,
             'history': self.history
-        }, os.path.join('checkpoints', filename))
+        }, path)
     
     def load_checkpoint(self, checkpoint_path):
         """Load model from checkpoint."""
@@ -306,7 +315,8 @@ class SemiSupervisedTrainer:
     
     def predict_with_uncertainty(self, x_cat, x_cont, n_samples=50):
         """Make predictions with uncertainty estimation."""
-        self.teacher_model.eval()
+        # Enable dropout during prediction for Monte Carlo sampling
+        self.teacher_model.train()
         
         predictions = []
         for _ in range(n_samples):
@@ -317,6 +327,9 @@ class SemiSupervisedTrainer:
         predictions = torch.stack(predictions)
         mean_pred = predictions.mean(dim=0)
         std_pred = predictions.std(dim=0)
+
+        # Switch back to evaluation mode
+        self.teacher_model.eval()
         
         # Calculate confidence intervals
         lower_95 = mean_pred - 1.96 * std_pred

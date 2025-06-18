@@ -37,7 +37,7 @@ def feature_dropout(x_cont, drop_rate=0.2):
     Returns:
         Features with dropout applied
     """
-    if x_cont is None or not x_cont.requires_grad:
+    if x_cont is None:
         return x_cont
     
     mask = torch.bernoulli(torch.ones_like(x_cont) * (1 - drop_rate))
